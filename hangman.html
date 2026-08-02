@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Виселица — Lyez</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0b0b;
+      --surface: #151515;
+      --surface-hover: #1f1f1f;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --accent: #8b6cf0;
+      --accent-hover: #7a5cdb;
+      --border: #2a2a2a;
+      --radius: 12px;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --term-bg: #0a0a0a;
+      --term-text: #00ff41;
+      --term-accent: #00cc33;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 6px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+      line-height: 1.6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: clamp(12px, 3vw, 24px);
+      padding-bottom: calc(clamp(12px, 3vw, 24px) + var(--safe-bottom));
+      transition: background 0.3s ease, color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    body.terminal-mode {
+      background: var(--term-bg) !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .game-container {
+      background: rgba(0, 255, 65, 0.05) !important;
+      border-color: #333 !important;
+    }
+    body.terminal-mode .hangman-display pre { color: var(--term-text) !important; }
+    body.terminal-mode .letter-btn {
+      background: #1a1a1a !important;
+      border-color: #333 !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .letter-btn:hover:not(:disabled) {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .letter-btn:disabled { opacity: 0.3 !important; }
+    body.terminal-mode .word-display span { border-bottom-color: var(--term-accent) !important; }
+    body.terminal-mode .music-widget {
+      background: rgba(0, 255, 65, 0.05) !important;
+      border-color: #333 !important;
+    }
+    body.terminal-mode .music-widget button {
+      background: #1a1a1a !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .music-widget button:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .music-widget .play-btn {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .nav-btn {
+      background: #1a1a1a !important;
+      border-color: #333 !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .nav-btn:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .result-message { color: var(--term-text) !important; }
+    body.terminal-mode .difficulty-btn {
+      background: #1a1a1a !important;
+      border-color: #333 !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .difficulty-btn:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .difficulty-btn.active {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+      border-color: var(--term-accent) !important;
+    }
+    body.terminal-mode .game-info { border-color: #333 !important; }
+
+    .game-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(20px, 4vw, 40px);
+      max-width: 850px;
+      width: 100%;
+      margin: 12px auto;
+      transition: all var(--transition);
+      position: relative;
+    }
+
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 850px;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: clamp(8px, 1vw, 12px) clamp(14px, 2vw, 20px);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: clamp(0.75rem, 1vw, 0.95rem);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .nav-btn:active { transform: scale(0.96); }
+
+    .difficulty-selector {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 8px 0 14px;
+      flex-wrap: wrap;
+    }
+    .difficulty-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: clamp(6px, 0.8vw, 10px) clamp(12px, 1.5vw, 20px);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: clamp(0.7rem, 0.9vw, 0.9rem);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-weight: 500;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 40px;
+    }
+    .difficulty-btn:active { transform: scale(0.95); }
+    .difficulty-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 108, 240, 0.3);
+    }
+
+    .hangman-display {
+      text-align: center;
+      margin-bottom: 16px;
+      min-height: 180px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hangman-display pre {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(0.8rem, 1.5vw, 1.3rem);
+      color: var(--text);
+      line-height: 1.4;
+      white-space: pre;
+      transition: color 0.3s;
+    }
+
+    .word-display {
+      display: flex;
+      justify-content: center;
+      gap: clamp(4px, 1vw, 12px);
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .word-display span {
+      font-size: clamp(1.6rem, 4vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      min-width: clamp(26px, 4vw, 52px);
+      text-align: center;
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 4px;
+      transition: border-color 0.3s;
+    }
+    .word-display span.revealed { border-bottom-color: var(--text-muted); }
+
+    .letters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(clamp(34px, 5vw, 50px), 1fr));
+      gap: 6px;
+      margin: 16px 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .letter-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: clamp(6px, 1vw, 12px) 0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .letter-btn:active:not(:disabled) { transform: scale(0.92); }
+    .letter-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+    .letter-btn.correct { background: #4caf50; border-color: #4caf50; color: #fff; }
+    .letter-btn.wrong { background: #f44336; border-color: #f44336; color: #fff; }
+
+    .game-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .game-info .stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: clamp(0.75rem, 1.1vw, 1rem);
+    }
+    .game-info .stat .value { font-weight: 700; color: var(--accent); }
+    .game-info .stat .value.wrong { color: #f44336; }
+
+    .result-message {
+      text-align: center;
+      font-size: clamp(1rem, 2vw, 1.6rem);
+      font-weight: 700;
+      padding: 14px;
+      border-radius: var(--radius);
+      margin: 10px 0;
+    }
+    .result-message.win { color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+    .result-message.lose { color: #f44336; background: rgba(244, 67, 54, 0.1); }
+
+    .game-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .game-actions .btn {
+      background: var(--surface-hover);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: clamp(8px, 1.2vw, 14px) clamp(16px, 2.5vw, 28px);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: clamp(0.75rem, 1vw, 1rem);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .game-actions .btn:active { transform: scale(0.96); }
+    .game-actions .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .game-actions .btn-primary:active { background: var(--accent-hover); }
+
+    .music-widget-wrapper {
+      width: 100%;
+      max-width: 850px;
+      margin: 6px auto 0;
+      display: flex;
+      justify-content: center;
+    }
+    .music-widget {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(6px, 1vw, 12px) clamp(12px, 2vw, 24px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 33.333%;
+      min-width: 180px;
+      transition: all var(--transition);
+    }
+    .music-widget .track-name {
+      font-size: clamp(0.6rem, 0.9vw, 0.85rem);
+      color: var(--text-muted);
+      min-width: 60px;
+      text-align: center;
+    }
+    .music-widget .controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .music-widget button {
+      background: var(--surface-hover);
+      border: none;
+      color: var(--text);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .music-widget button:active { transform: scale(0.9); }
+    .music-widget .play-btn {
+      background: var(--accent);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      font-size: 0.9rem;
+    }
+    .music-widget .play-btn:active { transform: scale(0.9); }
+    .music-widget .volume-slider {
+      width: 44px;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+    .music-widget .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .music-widget .volume-slider::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: clamp(16px, 3vw, 30px);
+      right: clamp(16px, 3vw, 30px);
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+      width: 340px;
+      padding-bottom: var(--safe-bottom);
+    }
+    .toast {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: clamp(0.7rem, 1vw, 0.9rem);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+    }
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .toast.hide { transform: translateX(120%); opacity: 0; }
+    .toast.success { border-left: 3px solid #4caf50; }
+    .toast.error { border-left: 3px solid #f44336; }
+    .toast.info { border-left: 3px solid #2196f3; }
+    .toast.warning { border-left: 3px solid #ff9800; }
+
+    @media (max-width: 600px) {
+      .game-container { padding: 14px; }
+      .nav-bar { flex-direction: column; align-items: stretch; }
+      .music-widget { width: 100%; min-width: unset; }
+      .game-info { flex-direction: column; align-items: center; }
+      .letters-grid { grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; }
+      .difficulty-selector { gap: 4px; }
+      .difficulty-btn { padding: 4px 10px; font-size: 0.7rem; min-height: 34px; }
+    }
+
+    @media (min-width: 601px) and (max-width: 900px) {
+      .music-widget { width: 50%; }
+    }
+
+    @media (max-width: 380px) {
+      .hangman-display pre { font-size: 0.7rem; }
+      .word-display span { font-size: 1.3rem; min-width: 20px; }
+      .letter-btn { font-size: 0.8rem; min-height: 36px; }
+    }
+
+    @supports (padding: max(0px)) {
+      body, .game-container, .nav-bar, .music-widget-wrapper, .toast-container {
+        padding-left: max(env(safe-area-inset-left), clamp(12px, 3vw, 24px));
+        padding-right: max(env(safe-area-inset-right), clamp(12px, 3vw, 24px));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn">← На главную</a>
+    <span style="font-size:clamp(0.7rem, 1.2vw, 1rem); color:var(--text-muted);">𓍯 Виселица</span>
+  </div>
+
+  <div class="game-container" id="gameContainer">
+    <h1 style="text-align:center; font-size:clamp(1.3rem, 3vw, 2.2rem); margin-bottom:2px;">Виселица</h1>
+    <p style="text-align:center; color:var(--text-muted); margin-bottom:10px; font-size:clamp(0.7rem, 1vw, 0.95rem);">Угадай слово, называя буквы</p>
+
+    <div class="difficulty-selector">
+      <button class="difficulty-btn active" data-difficulty="easy" onclick="setDifficulty('easy')">🟢 Лёгкий</button>
+      <button class="difficulty-btn" data-difficulty="medium" onclick="setDifficulty('medium')">🟡 Средний</button>
+      <button class="difficulty-btn" data-difficulty="hard" onclick="setDifficulty('hard')">🔴 Сложный</button>
+    </div>
+
+    <div class="hangman-display">
+      <pre id="hangmanArt">  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========</pre>
+    </div>
+
+    <div class="word-display" id="wordDisplay"></div>
+
+    <div class="game-info">
+      <div class="stat">📝 Ошибок: <span class="value wrong" id="wrongCount">0</span>/6</div>
+      <div class="stat">📊 Угадано: <span class="value" id="correctCount">0</span></div>
+      <div class="stat">🏆 Побед: <span class="value" id="winsCount">0</span></div>
+      <div class="stat">💀 Поражений: <span class="value" id="lossesCount">0</span></div>
+    </div>
+
+    <div id="resultMessage" class="result-message" style="display:none;"></div>
+
+    <div class="letters-grid" id="lettersGrid"></div>
+
+    <div class="game-actions">
+      <button class="btn btn-primary" onclick="newGame()">🔄 Новая игра</button>
+      <button class="btn" onclick="showHint()">💡 Подсказка</button>
+    </div>
+  </div>
+
+  <div class="music-widget-wrapper">
+    <div class="music-widget" id="musicWidget">
+      <span class="track-name" id="widgetTrackName">🎵 CAROL</span>
+      <div class="controls">
+        <button onclick="widgetPrevTrack()" title="Предыдущий">⏮</button>
+        <button class="play-btn" id="widgetPlayBtn" onclick="widgetTogglePlay()">▶</button>
+        <button onclick="widgetNextTrack()" title="Следующий">⏭</button>
+      </div>
+      <input type="range" class="volume-slider" id="widgetVolumeSlider" min="0" max="1" step="0.05" value="0.7" oninput="widgetUpdateVolume(this.value)">
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <audio id="globalAudio" preload="metadata">
+    <source src="https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // ===== MUSIC PLAYER =====
+    const audio = document.getElementById('globalAudio');
+    const playlist = [
+      { name: '🎵 CAROL', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&' },
+      { name: '🎵 Glance', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409813227241532/idonower_-_Glance_79472782.mp3?ex=6a7062ac&is=6a6f112c&hm=c58cd3ad42bdffcf5f73a0373a5960c8fad5658a682c69a1002e531695149b47&' }
+    ];
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+
+    function loadMusicState() {
+      try {
+        const saved = localStorage.getItem('lyezMusicState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          document.getElementById('widgetVolumeSlider').value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) {
+            audio.play().catch(() => { isPlaying = false; updateWidgetUI(); });
+          }
+        } else {
+          loadTrack(0);
+        }
+      } catch {
+        loadTrack(0);
+      }
+      updateWidgetUI();
+    }
+
+    function saveMusicState() {
+      try {
+        localStorage.setItem('lyezMusicState', JSON.stringify({
+          trackIndex: currentTrackIndex,
+          isPlaying: isPlaying,
+          volume: audio.volume
+        }));
+      } catch {}
+    }
+
+    function loadTrack(index) {
+      const track = playlist[index];
+      if (!track) return;
+      audio.src = track.url;
+      document.getElementById('widgetTrackName').textContent = track.name;
+      audio.load();
+      saveMusicState();
+    }
+
+    function widgetTogglePlay() {
+      if (audio.paused) {
+        audio.play().catch(() => { showToast('Не удалось воспроизвести', 'error'); });
+        isPlaying = true;
+      } else {
+        audio.pause();
+        isPlaying = false;
+      }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetNextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetPrevTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetUpdateVolume(value) {
+      audio.volume = parseFloat(value);
+      saveMusicState();
+    }
+
+    function updateWidgetUI() {
+      const playBtn = document.getElementById('widgetPlayBtn');
+      playBtn.textContent = isPlaying ? '⏸' : '▶';
+    }
+
+    audio.addEventListener('play', () => { isPlaying = true; updateWidgetUI(); saveMusicState(); });
+    audio.addEventListener('pause', () => { isPlaying = false; updateWidgetUI(); saveMusicState(); });
+    audio.addEventListener('ended', () => { widgetNextTrack(); });
+
+    // ===== TERMINAL MODE =====
+    function loadTerminalMode() {
+      try {
+        const saved = localStorage.getItem('lyezTerminalMode');
+        if (saved === 'true') {
+          document.body.classList.add('terminal-mode');
+        }
+      } catch {}
+    }
+
+    function saveTerminalMode() {
+      try {
+        localStorage.setItem('lyezTerminalMode', document.body.classList.contains('terminal-mode') ? 'true' : 'false');
+      } catch {}
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'lyezTerminalMode') {
+        if (e.newValue === 'true') {
+          document.body.classList.add('terminal-mode');
+        } else {
+          document.body.classList.remove('terminal-mode');
+        }
+      }
+      if (e.key === 'lyezMusicState') {
+        try {
+          const state = JSON.parse(e.newValue);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          document.getElementById('widgetVolumeSlider').value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) { audio.play().catch(() => {}); }
+          updateWidgetUI();
+        } catch {}
+      }
+    });
+
+    document.querySelector('h1').addEventListener('dblclick', () => {
+      document.body.classList.toggle('terminal-mode');
+      saveTerminalMode();
+      showToast(document.body.classList.contains('terminal-mode') ? '💻 Терминал-режим включён' : '💻 Обычный режим', 'info');
+    });
+
+    // ===== HANGMAN GAME (ТОЛЬКО РУССКИЕ СЛОВА) =====
+    const wordDatabase = [
+      // Лёгкие (3-5 букв)
+      { word: 'лиса', category: 'Животные', difficulty: 'easy' },
+      { word: 'волк', category: 'Животные', difficulty: 'easy' },
+      { word: 'заяц', category: 'Животные', difficulty: 'easy' },
+      { word: 'ёж', category: 'Животные', difficulty: 'easy' },
+      { word: 'сова', category: 'Животные', difficulty: 'easy' },
+      { word: 'кот', category: 'Животные', difficulty: 'easy' },
+      { word: 'пёс', category: 'Животные', difficulty: 'easy' },
+      { word: 'рак', category: 'Животные', difficulty: 'easy' },
+      { word: 'лещ', category: 'Животные', difficulty: 'easy' },
+      { word: 'лось', category: 'Животные', difficulty: 'easy' },
+      { word: 'бобр', category: 'Животные', difficulty: 'easy' },
+      { word: 'хомяк', category: 'Животные', difficulty: 'easy' },
+      { word: 'игра', category: 'Развлечения', difficulty: 'easy' },
+      { word: 'ранг', category: 'Развлечения', difficulty: 'easy' },
+      { word: 'бомба', category: 'CS2', difficulty: 'easy' },
+      { word: 'дым', category: 'CS2', difficulty: 'easy' },
+      { word: 'эйс', category: 'CS2', difficulty: 'easy' },
+      { word: 'флешка', category: 'CS2', difficulty: 'easy' },
+      { word: 'мираж', category: 'Карты', difficulty: 'easy' },
+      { word: 'нюк', category: 'Карты', difficulty: 'easy' },
+      { word: 'даст', category: 'Карты', difficulty: 'easy' },
+     
+
+      // Средние (6-8 букв)
+      { word: 'медведь', category: 'Животные', difficulty: 'medium' },
+      { word: 'снегирь', category: 'Животные', difficulty: 'medium' },
+      { word: 'черепаха', category: 'Животные', difficulty: 'medium' },
+      { word: 'верблюд', category: 'Животные', difficulty: 'medium' },
+      { word: 'пантера', category: 'Животные', difficulty: 'medium' },
+      { word: 'акула', category: 'Животные', difficulty: 'medium' },
+      { word: 'дельфин', category: 'Животные', difficulty: 'medium' },
+      { word: 'компьютер', category: 'Техника', difficulty: 'medium' },
+      { word: 'монитор', category: 'Техника', difficulty: 'medium' },
+      { word: 'наушники', category: 'Техника', difficulty: 'medium' },
+      { word: 'процессор', category: 'Техника', difficulty: 'medium' },
+      { word: 'победа', category: 'Развлечения', difficulty: 'medium' },
+      { word: 'команда', category: 'Развлечения', difficulty: 'medium' },
+      { word: 'турнир', category: 'Развлечения', difficulty: 'medium' },
+      { word: 'скилл', category: 'Развлечения', difficulty: 'medium' },
+      { word: 'инферно', category: 'Карты', difficulty: 'medium' },
+      { word: 'оверпас', category: 'Карты', difficulty: 'medium' },
+ 
+      // Сложные (9+ букв)
+      { word: 'клавиатура', category: 'Техника', difficulty: 'hard' },
+      { word: 'видеокарта', category: 'Техника', difficulty: 'hard' },
+      { word: 'оперативка', category: 'Техника', difficulty: 'hard' },
+      { word: 'соревнование', category: 'Развлечения', difficulty: 'hard' },
+      { word: 'чемпионат', category: 'Развлечения', difficulty: 'hard' },
+      { word: 'водопад', category: 'Природа', difficulty: 'hard' },
+      { word: 'гром', category: 'Природа', difficulty: 'hard' },
+      { word: 'молния', category: 'Природа', difficulty: 'hard' },
+      { word: 'землетрясение', category: 'Природа', difficulty: 'hard' },
+      { word: 'космонавт', category: 'Профессии', difficulty: 'hard' },
+      { word: 'археолог', category: 'Профессии', difficulty: 'hard' },
+      { word: 'художник', category: 'Профессии', difficulty: 'hard' },
+      { word: 'мороженое', category: 'Еда', difficulty: 'hard' },
+      { word: 'шоколад', category: 'Еда', difficulty: 'hard' },
+      { word: 'пирожное', category: 'Еда', difficulty: 'hard' },
+    ];
+
+    const hangmanStages = [
+      `  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========`,
+      `  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========`
+    ];
+
+    let currentWord = '', currentCategory = '', currentDifficulty = 'easy';
+    let guessedLetters = [], wrongGuesses = 0, maxWrong = 6, gameOver = false;
+    let wins = 0, losses = 0;
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const hangmanArt = document.getElementById('hangmanArt');
+    const wrongCount = document.getElementById('wrongCount');
+    const correctCount = document.getElementById('correctCount');
+    const winsCount = document.getElementById('winsCount');
+    const lossesCount = document.getElementById('lossesCount');
+    const lettersGrid = document.getElementById('lettersGrid');
+    const resultMessage = document.getElementById('resultMessage');
+
+    function loadStats() {
+      try {
+        const saved = localStorage.getItem('lyezHangmanStats');
+        if (saved) {
+          const stats = JSON.parse(saved);
+          wins = stats.wins || 0;
+          losses = stats.losses || 0;
+          winsCount.textContent = wins;
+          lossesCount.textContent = losses;
+        }
+      } catch {}
+    }
+
+    function saveStats() {
+      try {
+        localStorage.setItem('lyezHangmanStats', JSON.stringify({ wins, losses }));
+      } catch {}
+    }
+
+    function getWordByDifficulty(difficulty) {
+      const filtered = wordDatabase.filter(w => w.difficulty === difficulty);
+      if (filtered.length === 0) return wordDatabase[0];
+      const idx = Math.floor(Math.random() * filtered.length);
+      return filtered[idx];
+    }
+
+    function setDifficulty(difficulty) {
+      currentDifficulty = difficulty;
+      document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.difficulty === difficulty);
+      });
+      newGame();
+      const diffName = difficulty === 'easy' ? 'Лёгкая' : difficulty === 'medium' ? 'Средняя' : 'Сложная';
+      showToast(`🔀 Сложность: ${diffName}`, 'info', 2000);
+    }
+
+    function newGame() {
+      const wordObj = getWordByDifficulty(currentDifficulty);
+      currentWord = wordObj.word.toLowerCase();
+      currentCategory = wordObj.category;
+      guessedLetters = [];
+      wrongGuesses = 0;
+      gameOver = false;
+      resultMessage.style.display = 'none';
+      resultMessage.className = 'result-message';
+
+      renderWord();
+      renderHangman();
+      renderLetters();
+      updateStats();
+
+      document.querySelectorAll('.letter-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.className = 'letter-btn';
+      });
+
+      const diffName = currentDifficulty === 'easy' ? 'Лёгкая' : currentDifficulty === 'medium' ? 'Средняя' : 'Сложная';
+      showToast(`🎯 Угадай слово! (${currentCategory}, ${diffName})`, 'info', 2500);
+    }
+
+    function renderWord() {
+      wordDisplay.innerHTML = '';
+      const chars = currentWord.split('');
+      chars.forEach(char => {
+        const span = document.createElement('span');
+        if (guessedLetters.includes(char) || char === ' ') {
+          span.textContent = char;
+          span.classList.add('revealed');
+        } else {
+          span.textContent = '_';
+        }
+        wordDisplay.appendChild(span);
+      });
+    }
+
+    function renderHangman() {
+      hangmanArt.textContent = hangmanStages[wrongGuesses] || hangmanStages[hangmanStages.length - 1];
+    }
+
+    function renderLetters() {
+      const russianAlphabet = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+      lettersGrid.innerHTML = '';
+      for (const letter of russianAlphabet) {
+        const btn = document.createElement('button');
+        btn.className = 'letter-btn';
+        btn.textContent = letter;
+        btn.dataset.letter = letter;
+        btn.addEventListener('click', () => handleLetterClick(letter, btn));
+        lettersGrid.appendChild(btn);
+      }
+    }
+
+    function handleLetterClick(letter, btn) {
+      if (gameOver) return;
+      if (guessedLetters.includes(letter)) return;
+
+      guessedLetters.push(letter);
+      btn.disabled = true;
+
+      if (currentWord.includes(letter)) {
+        btn.classList.add('correct');
+        renderWord();
+        checkWin();
+      } else {
+        btn.classList.add('wrong');
+        wrongGuesses++;
+        renderHangman();
+        updateStats();
+        checkLose();
+      }
+      updateStats();
+    }
+
+    function checkWin() {
+      const chars = currentWord.split('');
+      const allGuessed = chars.every(char => char === ' ' || guessedLetters.includes(char));
+      if (allGuessed) {
+        gameOver = true;
+        wins++;
+        saveStats();
+        updateStats();
+        resultMessage.textContent = `🎉 Победа! Слово: "${currentWord}"`;
+        resultMessage.className = 'result-message win';
+        resultMessage.style.display = 'block';
+        disableAllLetters();
+        showToast('🎉 Ты победил!', 'success', 3000);
+      }
+    }
+
+    function checkLose() {
+      if (wrongGuesses >= maxWrong) {
+        gameOver = true;
+        losses++;
+        saveStats();
+        updateStats();
+        resultMessage.textContent = `💀 Поражение! Загаданное слово: "${currentWord}"`;
+        resultMessage.className = 'result-message lose';
+        resultMessage.style.display = 'block';
+        disableAllLetters();
+        showToast('💀 Ты проиграл!', 'error', 3000);
+      }
+    }
+
+    function disableAllLetters() {
+      document.querySelectorAll('.letter-btn').forEach(btn => { btn.disabled = true; });
+    }
+
+    function updateStats() {
+      wrongCount.textContent = wrongGuesses;
+      const guessedCount = currentWord.split('').filter(char => char !== ' ' && guessedLetters.includes(char)).length;
+      correctCount.textContent = guessedCount;
+      winsCount.textContent = wins;
+      lossesCount.textContent = losses;
+    }
+
+    function showHint() {
+      if (gameOver) {
+        showToast('Игра уже закончена! Начни новую.', 'warning');
+        return;
+      }
+      const wordLength = currentWord.length;
+      const diffName = currentDifficulty === 'easy' ? 'Лёгкая' : currentDifficulty === 'medium' ? 'Средняя' : 'Сложная';
+      showToast(`💡 Категория: ${currentCategory} | Длина: ${wordLength} букв | Сложность: ${diffName}`, 'info', 3500);
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 400);
+      }, duration);
+    }
+
+    // ===== KEYBOARD =====
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (key >= 'а' && key <= 'я' || key === 'ё') {
+        const btn = document.querySelector(`.letter-btn[data-letter="${key}"]`);
+        if (btn && !btn.disabled) { btn.click(); }
+      }
+      if (e.key === 'Enter' && gameOver) { newGame(); }
+    });
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTerminalMode();
+      loadMusicState();
+      loadStats();
+      newGame();
+    });
+
+    console.log('🎮 Hangman game loaded with ONLY Russian words!');
+  </script>
+</body>
+</html>

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Мои моменты — Lyez</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== Базовые переменные (как в index.html) ===== */
+    :root {
+      --bg: #0b0b0b;
+      --surface: #151515;
+      --surface-hover: #1f1f1f;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --accent: #8b6cf0;
+      --accent-hover: #7a5cdb;
+      --border: #2a2a2a;
+      --radius: 12px;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --term-bg: #0a0a0a;
+      --term-text: #00ff41;
+      --term-accent: #00cc33;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 6px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+      line-height: 1.6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: clamp(12px, 3vw, 24px);
+      padding-bottom: calc(clamp(12px, 3vw, 24px) + var(--safe-bottom));
+      transition: background 0.3s ease, color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      animation: fadeInBody 0.8s ease forwards;
+    }
+
+    body.terminal-mode {
+      background: var(--term-bg) !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .menu {
+      background: #111 !important;
+      border-color: #333 !important;
+    }
+    body.terminal-mode .menu-btn,
+    body.terminal-mode .submenu a,
+    body.terminal-mode .submenu .video-item {
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .menu-btn:hover,
+    body.terminal-mode .submenu a:hover,
+    body.terminal-mode .submenu .video-item:hover {
+      background: rgba(0, 255, 65, 0.1) !important;
+      color: var(--term-accent) !important;
+    }
+    body.terminal-mode .burger span { background: var(--term-text) !important; }
+    body.terminal-mode .player-container {
+      background: rgba(0, 255, 65, 0.05) !important;
+      border-color: #333 !important;
+    }
+    body.terminal-mode .ctrl-btn {
+      background: rgba(0, 255, 65, 0.1) !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .ctrl-btn:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .back-btn {
+      background: #1a1a1a !important;
+      border-color: #333 !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .back-btn:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .music-widget {
+      background: rgba(0, 255, 65, 0.05) !important;
+      border-color: #333 !important;
+    }
+    body.terminal-mode .music-widget button {
+      background: #1a1a1a !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .music-widget button:hover {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .music-widget .play-btn {
+      background: var(--term-accent) !important;
+      color: #000 !important;
+    }
+    body.terminal-mode .video-title {
+      background: linear-gradient(135deg, var(--term-text), var(--term-accent)) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+    }
+    body.terminal-mode .progress-fill { background: var(--term-accent) !important; }
+
+    @keyframes fadeInBody { to { opacity: 1; } }
+
+    /* ===== Бургер ===== */
+    .burger {
+      position: fixed;
+      top: clamp(14px, 3vw, 24px);
+      right: clamp(14px, 3vw, 24px);
+      width: 28px;
+      height: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      z-index: 1001;
+      transition: transform 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      padding: 4px;
+    }
+    .burger:active { transform: scale(0.9); }
+    .burger span {
+      display: block;
+      height: 2.5px;
+      background: var(--text);
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    .burger.active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+    .burger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .burger.active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+    /* ===== Меню ===== */
+    .menu {
+      position: fixed;
+      top: 0;
+      right: -340px;
+      width: clamp(280px, 80vw, 320px);
+      height: 100%;
+      height: 100dvh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 1000;
+      padding: clamp(16px, 3vw, 30px) clamp(14px, 2vw, 24px) calc(40px + var(--safe-bottom));
+      overflow-y: auto;
+      transition: right var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) var(--bg);
+      -webkit-overflow-scrolling: touch;
+    }
+    .menu::-webkit-scrollbar { width: 3px; }
+    .menu::-webkit-scrollbar-track { background: var(--bg); }
+    .menu::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .menu.active { right: 0; }
+
+    .menu-header {
+      font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin: 0 0 12px 8px;
+      font-weight: 600;
+    }
+
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 16px);
+      border-radius: var(--radius);
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform 0.25s ease;
+      width: 100%;
+      text-align: left;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-btn:active { background: var(--surface-hover); transform: translateX(-4px); }
+    .menu-btn .icon {
+      font-size: clamp(0.9rem, 1.5vw, 1.3rem);
+      width: 28px;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    .menu-btn:active .icon { transform: translateX(-2px); }
+    .menu-btn .arrow {
+      font-size: 1rem;
+      transition: transform 0.3s ease;
+      color: var(--text-muted);
+    }
+    .menu-btn.active .arrow { transform: rotate(90deg); }
+
+    .submenu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.3s ease;
+      opacity: 0;
+      padding-left: 4px;
+    }
+    .submenu.open { max-height: 600px; opacity: 1; }
+    .submenu a,
+    .submenu .video-item {
+      padding: clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 16px) clamp(8px, 1vw, 12px) clamp(32px, 5vw, 48px);
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius);
+      font-size: clamp(0.75rem, 1vw, 0.95rem);
+      transition: background var(--transition), color var(--transition), transform 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .submenu a:active,
+    .submenu .video-item:active {
+      background: var(--surface-hover);
+      color: var(--text);
+      transform: translateX(-2px);
+    }
+    .submenu .video-item .icon { font-size: 1rem; width: 24px; }
+
+    /* ===== Музыкальный виджет в меню ===== */
+    .music-widget {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: clamp(10px, 1.5vw, 16px);
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+    .music-widget .track-name {
+      font-size: clamp(0.7rem, 1vw, 0.9rem);
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-align: center;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .music-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .music-controls button {
+      background: var(--surface-hover);
+      border: none;
+      color: var(--text);
+      width: clamp(32px, 4vw, 38px);
+      height: clamp(32px, 4vw, 38px);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .music-controls button:active { transform: scale(0.9); }
+    .music-controls .play-btn {
+      width: clamp(38px, 5vw, 46px);
+      height: clamp(38px, 5vw, 46px);
+      font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+      background: var(--accent);
+      color: #fff;
+    }
+    .music-controls .play-btn:active { transform: scale(0.9); }
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .volume-control input[type="range"] {
+      flex: 1;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+    .volume-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .volume-control input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+    .volume-control .vol-icon { font-size: 1rem; color: var(--text-muted); min-width: 24px; }
+
+    /* ===== Основной плеер ===== */
+    .video-gallery {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 70vh;
+      width: 100%;
+      padding: 60px 20px 80px;
+    }
+    .player-container {
+      max-width: 1000px;
+      width: 100%;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: clamp(16px, 3vw, 24px);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transition: all var(--transition);
+    }
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 16px;
+      aspect-ratio: 16 / 9;
+    }
+    .video-wrapper iframe,
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: none;
+    }
+
+    .video-title {
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      font-weight: 600;
+      margin-bottom: 14px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--text), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .ctrl-btn {
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: clamp(0.8rem, 1vw, 0.95rem);
+      padding: clamp(6px, 0.8vw, 10px) clamp(12px, 1.5vw, 18px);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 40px;
+    }
+    .ctrl-btn:active { transform: scale(0.95); }
+    .ctrl-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      min-width: 80px;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 10px;
+      transition: width 0.1s linear;
+    }
+    .time-display {
+      font-size: clamp(0.75rem, 0.9vw, 0.9rem);
+      font-family: monospace;
+      background: var(--bg);
+      padding: 4px 10px;
+      border-radius: 30px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ===== Кнопка "Назад" ===== */
+    .back-btn {
+      position: fixed;
+      bottom: clamp(16px, 3vw, 24px);
+      left: clamp(16px, 3vw, 24px);
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: clamp(8px, 1vw, 12px) clamp(16px, 2vw, 20px);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: clamp(0.8rem, 1vw, 0.95rem);
+      transition: all var(--transition);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .back-btn:active { transform: scale(0.95); }
+    .back-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 108, 240, 0.3);
+    }
+
+    /* ===== Toast ===== */
+    .toast-container {
+      position: fixed;
+      bottom: clamp(16px, 3vw, 30px);
+      right: clamp(16px, 3vw, 30px);
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+      width: 340px;
+      padding-bottom: var(--safe-bottom);
+    }
+    .toast {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: clamp(0.75rem, 1vw, 0.9rem);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+    }
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .toast.hide { transform: translateX(120%); opacity: 0; }
+    .toast.success { border-left: 3px solid #4caf50; }
+    .toast.error { border-left: 3px solid #f44336; }
+    .toast.info { border-left: 3px solid #2196f3; }
+    .toast.warning { border-left: 3px solid #ff9800; }
+
+    /* ===== Адаптив ===== */
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-buttons { justify-content: center; flex-wrap: wrap; }
+      .ctrl-btn { padding: 8px 12px; font-size: 0.8rem; min-height: 38px; }
+      .progress-bar { min-width: 60px; }
+    }
+
+    @media (max-width: 380px) {
+      .video-title { font-size: 0.9rem; }
+      .ctrl-btn { font-size: 0.7rem; padding: 6px 10px; min-height: 34px; }
+    }
+
+    @supports (padding: max(0px)) {
+      body, .menu, .toast-container {
+        padding-left: max(env(safe-area-inset-left), clamp(12px, 3vw, 24px));
+        padding-right: max(env(safe-area-inset-right), clamp(12px, 3vw, 24px));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Бургер ===== -->
+  <div class="burger" id="burgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <!-- ===== Меню ===== -->
+  <nav class="menu" id="menu" role="navigation" aria-label="Main menu">
+    <span class="menu-header">Меню</span>
+
+    <!-- Мои моменты -->
+    <button class="menu-btn" data-target="momentsSubmenu">
+      <span class="icon">📁</span> Мои моменты
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="momentsSubmenu"></div>
+
+    <!-- Музыка (виджет) -->
+    <div style="margin-top:8px;">
+      <span class="menu-header" style="margin-bottom:4px;">🎵 Музыка</span>
+      <div class="music-widget" id="musicWidget">
+        <div class="track-name" id="widgetTrackName">🎵 CAROL</div>
+        <div class="music-controls">
+          <button onclick="widgetPrevTrack()" title="Предыдущий">⏮</button>
+          <button class="play-btn" id="widgetPlayBtn" onclick="widgetTogglePlay()">▶</button>
+          <button onclick="widgetNextTrack()" title="Следующий">⏭</button>
+        </div>
+        <div class="volume-control">
+          <span class="vol-icon">🔊</span>
+          <input type="range" id="widgetVolumeSlider" min="0" max="1" step="0.05" value="0.7" oninput="widgetUpdateVolume(this.value)">
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Кнопка "Назад" ===== -->
+  <button class="back-btn" onclick="goBack()">← На главную</button>
+
+  <!-- ===== Основной контент ===== -->
+  <div class="video-gallery">
+    <div class="player-container">
+      <div class="video-title" id="currentVideoTitle">Загрузка моментов...</div>
+      <div class="video-wrapper" id="videoWrapper">
+        <div id="playerContainer" style="width:100%; height:100%;"></div>
+      </div>
+      <div class="controls">
+        <div class="control-buttons">
+          <button class="ctrl-btn" id="prevBtn">⏮ Пред.</button>
+          <button class="ctrl-btn" id="playPauseBtn">▶ Воспр.</button>
+          <button class="ctrl-btn" id="nextBtn">След. ⏭</button>
+        </div>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Toast ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== Скрытое аудио (для синхронизации с index.html) ===== -->
+  <audio id="globalAudio" preload="metadata">
+    <source src="https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&" type="audio/mpeg">
+  </audio>
+
+  <!-- ===== YouTube IFrame API ===== -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    // ============================================
+    // 1. МУЗЫКА (синхронизация с index.html)
+    // ============================================
+    const audio = document.getElementById('globalAudio');
+    const playlist = [
+      { name: '🎵 CAROL', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&' },
+      { name: '🎵 Glance', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409813227241532/idonower_-_Glance_79472782.mp3?ex=6a7062ac&is=6a6f112c&hm=c58cd3ad42bdffcf5f73a0373a5960c8fad5658a682c69a1002e531695149b47&' }
+    ];
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+
+    function loadMusicState() {
+      try {
+        const saved = localStorage.getItem('lyezMusicState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          document.getElementById('widgetVolumeSlider').value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) {
+            audio.play().catch(() => { isPlaying = false; updateWidgetUI(); });
+          }
+        } else {
+          loadTrack(0);
+        }
+      } catch {
+        loadTrack(0);
+      }
+      updateWidgetUI();
+    }
+
+    function saveMusicState() {
+      try {
+        localStorage.setItem('lyezMusicState', JSON.stringify({
+          trackIndex: currentTrackIndex,
+          isPlaying: isPlaying,
+          volume: audio.volume
+        }));
+      } catch {}
+    }
+
+    function loadTrack(index) {
+      const track = playlist[index];
+      if (!track) return;
+      audio.src = track.url;
+      document.getElementById('widgetTrackName').textContent = track.name;
+      audio.load();
+      saveMusicState();
+    }
+
+    function widgetTogglePlay() {
+      if (audio.paused) {
+        audio.play().catch(() => { showToast('Не удалось воспроизвести', 'error'); });
+        isPlaying = true;
+      } else {
+        audio.pause();
+        isPlaying = false;
+      }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetNextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetPrevTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateWidgetUI();
+      saveMusicState();
+    }
+
+    function widgetUpdateVolume(value) {
+      audio.volume = parseFloat(value);
+      saveMusicState();
+    }
+
+    function updateWidgetUI() {
+      const playBtn = document.getElementById('widgetPlayBtn');
+      playBtn.textContent = isPlaying ? '⏸' : '▶';
+    }
+
+    audio.addEventListener('play', () => { isPlaying = true; updateWidgetUI(); saveMusicState(); });
+    audio.addEventListener('pause', () => { isPlaying = false; updateWidgetUI(); saveMusicState(); });
+    audio.addEventListener('ended', () => { widgetNextTrack(); });
+
+    // Слушаем изменения из других вкладок
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'lyezMusicState') {
+        try {
+          const state = JSON.parse(e.newValue);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          document.getElementById('widgetVolumeSlider').value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) { audio.play().catch(() => {}); }
+          updateWidgetUI();
+        } catch {}
+      }
+    });
+
+    // ============================================
+    // 2. ТЕРМИНАЛ-РЕЖИМ (синхронизация с index.html)
+    // ============================================
+    function loadTerminalMode() {
+      try {
+        const saved = localStorage.getItem('lyezTerminalMode');
+        if (saved === 'true') {
+          document.body.classList.add('terminal-mode');
+        }
+      } catch {}
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'lyezTerminalMode') {
+        if (e.newValue === 'true') {
+          document.body.classList.add('terminal-mode');
+        } else {
+          document.body.classList.remove('terminal-mode');
+        }
+      }
+    });
+
+    // Двойной клик по заголовку — переключение терминала
+    document.querySelector('.video-title').addEventListener('dblclick', () => {
+      document.body.classList.toggle('terminal-mode');
+      try {
+        localStorage.setItem('lyezTerminalMode', document.body.classList.contains('terminal-mode') ? 'true' : 'false');
+      } catch {}
+      showToast(document.body.classList.contains('terminal-mode') ? '💻 Терминал-режим включён' : '💻 Обычный режим', 'info');
+    });
+
+    // ============================================
+    // 3. ПЛЕЙЛИСТ ВИДЕО
+    // ============================================
+    const videoLibrary = [
+      { name: " Момент 1", type: "youtube", videoId: "GEHej0FyknI" },
+      { name: " Момент 2", type: "youtube", videoId: "3xuviCyR9uI" },
+      { name: " Момент 3", type: "youtube", videoId: "qZF1JQh2HLE" },
+      { name: " Момент 4", type: "youtube", videoId: "VvM1OqbAZqU" }
+    ];
+
+    let currentIndex = 0;
+    let currentPlayer = null;
+    let playerType = null;
+    let isVideoPlaying = false;
+    let ytPlayer = null;
+    let youtubeAPIReady = false;
+    let pendingVideoIndex = null;
+
+    // DOM элементы
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const titleElem = document.getElementById('currentVideoTitle');
+    const playerContainer = document.getElementById('playerContainer');
+
+    // ============================================
+    // 4. УТИЛИТЫ
+    // ============================================
+    function showToast(msg, type = 'info', duration = 2500) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, duration);
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // ============================================
+    // 5. УПРАВЛЕНИЕ ПЛЕЕРОМ
+    // ============================================
+    function destroyCurrentPlayer() {
+      if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy();
+      ytPlayer = null;
+      if (currentPlayer && currentPlayer.pause) currentPlayer.pause();
+      playerContainer.innerHTML = '';
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+      youtubeAPIReady = true;
+      if (pendingVideoIndex !== null) {
+        loadVideo(pendingVideoIndex);
+        pendingVideoIndex = null;
+      }
+    };
+
+    function loadVideo(index) {
+      if (!videoLibrary[index]) { showToast("Момент не найден", "error"); return false; }
+      destroyCurrentPlayer();
+      const item = videoLibrary[index];
+      titleElem.innerText = item.name;
+      currentIndex = index;
+
+      if (item.type === 'youtube' && item.videoId) {
+        playerType = 'youtube';
+        const iframeDiv = document.createElement('div');
+        iframeDiv.id = 'youtubePlayer';
+        iframeDiv.style.width = '100%';
+        iframeDiv.style.height = '100%';
+        playerContainer.appendChild(iframeDiv);
+
+        if (window.YT && YT.Player) {
+          ytPlayer = new YT.Player('youtubePlayer', {
+            videoId: item.videoId,
+            playerVars: { autoplay: 0, controls: 0, modestbranding: 1, rel: 0 },
+            events: {
+              onReady: (event) => {
+                currentPlayer = event.target;
+                isVideoPlaying = false;
+                playPauseBtn.innerHTML = '▶ Воспр.';
+                updateTimeForYouTube();
+              },
+              onStateChange: (e) => {
+                if (e.data === YT.PlayerState.PLAYING) {
+                  isVideoPlaying = true;
+                  playPauseBtn.innerHTML = '⏸ Пауза';
+                } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+                  isVideoPlaying = false;
+                  playPauseBtn.innerHTML = '▶ Воспр.';
+                }
+                if (e.data === YT.PlayerState.ENDED) nextVideo();
+              },
+              onError: (err) => {
+                console.error("YouTube Player Error:", err);
+                showToast("Не удалось загрузить видео", "error");
+              }
+            }
+          });
+        } else {
+          showToast("YouTube API загружается...", "info");
+          pendingVideoIndex = index;
+          return false;
+        }
+      } else {
+        showToast("Неизвестный тип видео", "error");
+        return false;
+      }
+      return true;
+    }
+
+    function updateTimeForYouTube() {
+      if (!ytPlayer || playerType !== 'youtube') return;
+      const interval = setInterval(() => {
+        if (playerType === 'youtube' && ytPlayer && ytPlayer.getCurrentTime) {
+          const cur = ytPlayer.getCurrentTime();
+          const dur = ytPlayer.getDuration();
+          if (dur) {
+            progressFill.style.width = (cur / dur) * 100 + '%';
+            timeDisplay.innerText = `${formatTime(cur)} / ${formatTime(dur)}`;
+          }
+        } else clearInterval(interval);
+      }, 250);
+      window._ytInterval = interval;
+    }
+
+    function togglePlayPause() {
+      if (!currentPlayer) return;
+      if (playerType === 'youtube' && ytPlayer) {
+        if (isVideoPlaying) ytPlayer.pauseVideo();
+        else ytPlayer.playVideo();
+      }
+    }
+
+    function nextVideo() {
+      let next = (currentIndex + 1) % videoLibrary.length;
+      loadVideo(next);
+    }
+
+    function prevVideo() {
+      let prev = (currentIndex - 1 + videoLibrary.length) % videoLibrary.length;
+      loadVideo(prev);
+    }
+
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    // ============================================
+    // 6. ПОСТРОЕНИЕ ПОДМЕНЮ МОМЕНТОВ
+    // ============================================
+    function buildMomentsSubmenu() {
+      const container = document.getElementById('momentsSubmenu');
+      container.innerHTML = '';
+      videoLibrary.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'video-item';
+        div.innerHTML = `<span class="icon">🎬</span> ${v.name}`;
+        div.onclick = () => {
+          loadVideo(i);
+          closeMenu();
+          setTimeout(() => togglePlayPause(), 300);
+        };
+        container.appendChild(div);
+      });
+    }
+
+    // ============================================
+    // 7. МЕНЮ
+    // ============================================
+    const burger = document.getElementById('burgerBtn');
+    const menu = document.getElementById('menu');
+
+    function toggleMenu() {
+      burger.classList.toggle('active');
+      menu.classList.toggle('active');
+      if (!menu.classList.contains('active')) closeAllSubmenus();
+    }
+
+    function closeMenu() {
+      burger.classList.remove('active');
+      menu.classList.remove('active');
+      closeAllSubmenus();
+    }
+
+    function closeAllSubmenus() {
+      document.querySelectorAll('.submenu').forEach(s => s.classList.remove('open'));
+      document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    burger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (menu.classList.contains('active') && !menu.contains(e.target) && !burger.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    // Меню-кнопки с подменю
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const targetId = this.dataset.target;
+        if (!targetId) return;
+        const submenu = document.getElementById(targetId);
+        if (!submenu) return;
+        e.stopPropagation();
+        const isOpen = submenu.classList.contains('open');
+        closeAllSubmenus();
+        if (!isOpen) {
+          submenu.classList.add('open');
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // ============================================
+    // 8. КЛАВИАТУРА
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+      }
+      if (e.code === 'ArrowRight') nextVideo();
+      if (e.code === 'ArrowLeft') prevVideo();
+      if (e.key === 'Escape') closeMenu();
+      if (e.code === 'KeyF') {
+        const wrapper = document.getElementById('videoWrapper');
+        if (!document.fullscreenElement) {
+          wrapper.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    });
+
+    // ============================================
+    // 9. ЖЕСТЫ (свайп)
+    // ============================================
+    let touchStartX = 0;
+    const wrapper = document.getElementById('videoWrapper');
+    wrapper.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    wrapper.addEventListener('touchend', (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 60) {
+        if (diff > 0) prevVideo();
+        else nextVideo();
+        showToast(diff > 0 ? '← Предыдущий' : 'Следующий →', 'info', 1000);
+      }
+    });
+
+    // ============================================
+    // 10. ИНИЦИАЛИЗАЦИЯ
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTerminalMode();
+      loadMusicState();
+      buildMomentsSubmenu();
+
+      // Кнопки
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      prevBtn.addEventListener('click', prevVideo);
+      nextBtn.addEventListener('click', nextVideo);
+
+      // Прогресс-бар
+      progressBar.addEventListener('click', (e) => {
+        if (playerType === 'youtube' && ytPlayer) {
+          const rect = progressBar.getBoundingClientRect();
+          const percent = (e.clientX - rect.left) / rect.width;
+          const dur = ytPlayer.getDuration();
+          if (dur) ytPlayer.seekTo(percent * dur, true);
+        }
+      });
+
+      // Загружаем первое видео
+      loadVideo(0);
+    });
+
+    console.log('🎬 Moments page loaded with sync!');
+  </script>
+</body>
+</html>

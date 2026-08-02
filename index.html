@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Lyez</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0b0b;
+      --surface: #151515;
+      --surface-hover: #1f1f1f;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --accent: #8b6cf0;
+      --accent-hover: #7a5cdb;
+      --border: #2a2a2a;
+      --radius: 12px;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --term-bg: #0a0a0a;
+      --term-text: #00ff41;
+      --term-accent: #00cc33;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 6px; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+      line-height: 1.6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(12px, 3vw, 24px);
+      padding-bottom: calc(clamp(12px, 3vw, 24px) + var(--safe-bottom));
+      position: relative;
+      opacity: 0;
+      animation: fadeInBody 0.8s ease forwards;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.terminal-mode {
+      background: var(--term-bg) !important;
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .logo {
+      background: linear-gradient(135deg, var(--term-text) 30%, var(--term-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+    }
+    body.terminal-mode .menu-btn,
+    body.terminal-mode .submenu a,
+    body.terminal-mode .submenu .menu-link {
+      color: var(--term-text) !important;
+    }
+    body.terminal-mode .menu-btn:hover,
+    body.terminal-mode .submenu a:hover {
+      background: rgba(0, 255, 65, 0.1) !important;
+      color: var(--term-accent) !important;
+    }
+    body.terminal-mode .burger span { background: var(--term-text) !important; }
+    body.terminal-mode .menu { background: #111 !important; border-color: #333 !important; }
+    body.terminal-mode .modal { background: #111 !important; border-color: #333 !important; }
+    body.terminal-mode .modal h2 { color: var(--term-text) !important; }
+    body.terminal-mode .btn { background: #222 !important; border-color: #333 !important; color: var(--term-text) !important; }
+    body.terminal-mode .btn-primary { background: var(--term-accent) !important; color: #000 !important; }
+    body.terminal-mode .subtitle { color: var(--term-text) !important; opacity: 0.7; }
+    body.terminal-mode .typing-text { border-color: var(--term-accent) !important; color: var(--term-text) !important; }
+    body.terminal-mode .music-player { background: rgba(0, 255, 65, 0.05) !important; border-color: #333 !important; }
+    body.terminal-mode .music-player button { background: #1a1a1a !important; color: var(--term-text) !important; }
+    body.terminal-mode .music-player button:hover { background: var(--term-accent) !important; color: #000 !important; }
+    body.terminal-mode .music-player .play-btn { background: var(--term-accent) !important; color: #000 !important; }
+
+    @keyframes fadeInBody { to { opacity: 1; } }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(139, 108, 240, 0.04) 0%, transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(139, 108, 240, 0.03) 0%, transparent 50%);
+      transition: background 0.3s ease;
+    }
+    body.terminal-mode::before {
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 65, 0.04) 0%, transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(0, 255, 65, 0.03) 0%, transparent 50%);
+    }
+
+    .page-transition { animation: fadePage 0.4s ease forwards; }
+    @keyframes fadePage { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    .logo-link {
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .logo-link:active { transform: scale(0.95); }
+
+    .logo {
+      font-size: clamp(3rem, 14vw, 6.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, rgba(255,255,255,0.9) 30%, var(--accent) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      user-select: none;
+      animation: shimmer 4s ease-in-out infinite, slideUp 0.8s ease forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes shimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    .typing-text {
+      font-size: clamp(0.9rem, 2.5vw, 1.4rem);
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      margin-top: -0.2em;
+      margin-bottom: 1.5em;
+      min-height: 2em;
+      border-right: 2px solid var(--accent);
+      display: inline-block;
+      padding-right: 8px;
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    footer {
+      position: fixed;
+      bottom: clamp(12px, 2vw, 20px);
+      font-size: clamp(0.6rem, 1vw, 0.85rem);
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      opacity: 0;
+      animation: slideUp 0.8s ease 0.4s forwards;
+      padding-bottom: var(--safe-bottom);
+    }
+
+    .burger {
+      position: fixed;
+      top: clamp(14px, 3vw, 24px);
+      right: clamp(14px, 3vw, 24px);
+      width: 28px;
+      height: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      z-index: 1001;
+      transition: transform 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      padding: 4px;
+    }
+    .burger:active { transform: scale(0.9); }
+    .burger span {
+      display: block;
+      height: 2.5px;
+      background: var(--text);
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    .burger.active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+    .burger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .burger.active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition), visibility var(--transition);
+    }
+    .menu-overlay.active { opacity: 1; visibility: visible; }
+
+    .menu {
+      position: fixed;
+      top: 0;
+      right: -340px;
+      width: clamp(280px, 80vw, 320px);
+      height: 100%;
+      height: 100dvh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 1000;
+      padding: clamp(16px, 3vw, 30px) clamp(14px, 2vw, 24px) calc(40px + var(--safe-bottom));
+      overflow-y: auto;
+      transition: right var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) var(--bg);
+      -webkit-overflow-scrolling: touch;
+    }
+    .menu::-webkit-scrollbar { width: 3px; }
+    .menu::-webkit-scrollbar-track { background: var(--bg); }
+    .menu::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .menu.active { right: 0; }
+
+    .menu-header {
+      font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin: 0 0 12px 8px;
+      font-weight: 600;
+    }
+
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 16px);
+      border-radius: var(--radius);
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform 0.25s ease;
+      width: 100%;
+      text-align: left;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-btn:active { background: var(--surface-hover); transform: translateX(-4px); }
+    .menu-btn .icon {
+      font-size: clamp(0.9rem, 1.5vw, 1.3rem);
+      width: 28px;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    .menu-btn:active .icon { transform: translateX(-2px); }
+    .menu-btn .arrow {
+      font-size: 1rem;
+      transition: transform 0.3s ease;
+      color: var(--text-muted);
+    }
+    .menu-btn.active .arrow { transform: rotate(90deg); }
+
+    .submenu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.3s ease;
+      opacity: 0;
+      padding-left: 4px;
+    }
+    .submenu.open { max-height: 600px; opacity: 1; }
+    .submenu a,
+    .submenu .menu-link {
+      padding: clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 16px) clamp(8px, 1vw, 12px) clamp(32px, 5vw, 48px);
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: var(--radius);
+      font-size: clamp(0.75rem, 1vw, 0.95rem);
+      transition: background var(--transition), color var(--transition), transform 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .submenu a:active,
+    .submenu .menu-link:active {
+      background: var(--surface-hover);
+      color: var(--text);
+      transform: translateX(-2px);
+    }
+    .submenu .menu-link .icon { font-size: 1rem; width: 24px; }
+
+    .music-player {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: clamp(10px, 1.5vw, 16px);
+      margin-top: 4px;
+      border: 1px solid var(--border);
+    }
+    .music-player .track-name {
+      font-size: clamp(0.7rem, 1vw, 0.9rem);
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-align: center;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .music-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .music-controls button {
+      background: var(--surface-hover);
+      border: none;
+      color: var(--text);
+      width: clamp(32px, 4vw, 38px);
+      height: clamp(32px, 4vw, 38px);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .music-controls button:active { transform: scale(0.9); }
+    .music-controls .play-btn {
+      width: clamp(38px, 5vw, 46px);
+      height: clamp(38px, 5vw, 46px);
+      font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+      background: var(--accent);
+      color: #fff;
+    }
+    .music-controls .play-btn:active { transform: scale(0.9); }
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .volume-control input[type="range"] {
+      flex: 1;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+    .volume-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .volume-control input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+    .volume-control .vol-icon { font-size: 1rem; color: var(--text-muted); min-width: 24px; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(18px, 3vw, 28px);
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      max-height: 80dvh;
+      overflow-y: auto;
+      transform: scale(0.96);
+      transition: transform 0.3s ease;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-overlay.active .modal { transform: scale(1); }
+
+    .modal h2 {
+      font-weight: 600;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      margin-bottom: 14px;
+      letter-spacing: -0.01em;
+    }
+    .modal p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+      font-size: clamp(0.85rem, 1vw, 1rem);
+    }
+
+    .btn {
+      background: var(--surface-hover);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: clamp(8px, 1vw, 12px) clamp(14px, 2vw, 24px);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: clamp(0.75rem, 1vw, 0.95rem);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:active { background: var(--accent-hover); }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 1.4rem;
+      line-height: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color var(--transition), transform 0.2s ease;
+      padding: 4px 8px;
+      min-height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .close-modal:active { transform: rotate(90deg) scale(0.9); }
+
+    .bet-calc {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .bet-calc .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .bet-calc .field label {
+      font-size: clamp(0.75rem, 1vw, 0.9rem);
+      color: var(--text-muted);
+    }
+    .bet-calc .field input {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      width: 100%;
+      min-height: 44px;
+    }
+    .bet-calc .field input:focus { outline: none; border-color: var(--accent); }
+    .bet-result {
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+      font-weight: 600;
+    }
+    .bet-result span { color: var(--accent); }
+
+    /* === DONATE QR CODE === */
+    .donate-qr {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin: 10px 0 20px;
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition), transform 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .donate-qr:active { transform: scale(0.97); border-color: var(--accent); }
+    .donate-qr img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+    .donate-qr .copy-feedback {
+      font-size: 0.8rem;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity var(--transition);
+      margin-top: 8px;
+    }
+    .donate-qr .copy-feedback.show { opacity: 1; }
+
+    /* === TRAINING MAPS === */
+    .training-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .training-list li {
+      margin: 8px 0;
+    }
+    .training-list li .btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: clamp(16px, 3vw, 30px);
+      right: clamp(16px, 3vw, 30px);
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
+      width: 340px;
+      padding-bottom: var(--safe-bottom);
+    }
+    .toast {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: clamp(0.75rem, 1vw, 0.9rem);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+    }
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .toast.hide { transform: translateX(120%); opacity: 0; }
+    .toast.success { border-left: 3px solid #4caf50; }
+    .toast.error { border-left: 3px solid #f44336; }
+    .toast.info { border-left: 3px solid #2196f3; }
+    .toast.warning { border-left: 3px solid #ff9800; }
+
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .menu { width: 280px; right: -300px; padding: 14px 12px 30px; }
+      .menu-btn { font-size: 0.85rem; padding: 10px 10px; }
+      .submenu a { padding: 8px 10px 8px 32px; font-size: 0.8rem; }
+      .modal { padding: 16px; max-width: 100%; }
+      .toast-container { right: 12px; bottom: 12px; width: calc(100vw - 24px); }
+    }
+
+    @media (max-width: 380px) {
+      .logo { font-size: 2.8rem; }
+      .burger { width: 24px; height: 18px; top: 12px; right: 12px; }
+      .burger.active span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+      .burger.active span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+    }
+
+    @supports (padding: max(0px)) {
+      body, .menu, .modal, .toast-container {
+        padding-left: max(env(safe-area-inset-left), clamp(12px, 3vw, 24px));
+        padding-right: max(env(safe-area-inset-right), clamp(12px, 3vw, 24px));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="burger" id="burgerBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay"></div>
+
+  <nav class="menu" id="menu" role="navigation" aria-label="Main menu">
+    <span class="menu-header">Меню</span>
+
+    <button class="menu-btn" data-target="profileSubmenu">
+      <span class="icon">👤</span> Профиль
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="profileSubmenu">
+      <a href="https://steamcommunity.com/profiles/76561199873447965/" target="_blank">🎮 Steam</a>
+      <a href="https://csstats.gg/ru-RU/player/76561199873447965" target="_blank">📊 CSStats</a>
+      <a href="https://www.faceit.com/ru/players/Lyez" target="_blank">⚡ FACEIT</a>
+    </div>
+
+    <button class="menu-btn" data-target="featuresSubmenu">
+      <span class="icon">🧩</span> Фишки
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="featuresSubmenu">
+      <a href="#" onclick="showModal('📈 Статистика в разработке...')">📈 Stats</a>
+      <a href="#" onclick="showModal('🔄 Live Stats — скоро!')">🔄 Live Stats</a>
+      <a href="#" onclick="showTrainingMapsModal()">🗺️ Training Maps</a>
+      <a href="moment.html">🎬 My Moments</a>
+    </div>
+
+    <button class="menu-btn" data-target="aboutSubmenu">
+      <span class="icon">ℹ️</span> Обо мне
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="aboutSubmenu">
+      <a href="#" onclick="showAboutModal()">📖 О сайте</a>
+      <a href="#" onclick="showPCSpecs()">🖥️ Мой ПК</a>
+      <a href="#" onclick="showConfig()">🛠️ Мой конфиг</a>
+      <a href="https://t.me/MrLyez" target="_blank">💬 Telegram</a>
+    </div>
+
+    <button class="menu-btn" data-target="supportSubmenu">
+      <span class="icon">❤️</span> Поддержать
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="supportSubmenu">
+      <a href="#" onclick="showLisSkinsModal()">🦊 Lis-Skins</a>
+      <a href="#" onclick="showAimMarketModal()">🎯 Aim-Market</a>
+      <a href="https://steamcommunity.com/tradeoffer/new/?partner=1913182237&token=AyuNtjhd" target="_blank">🔄 Trade</a>
+      <a href="#" onclick="showDonateModal()">💳 Donate</a>
+    </div>
+
+    <button class="menu-btn" data-target="gamesSubmenu">
+      <span class="icon">🎮</span> Игры
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="gamesSubmenu">
+      <a href="hangman.html">𓍯 Виселица</a>
+      <a href="#" onclick="showBetCalculator()">💰 Калькулятор ставок</a>
+    </div>
+
+    <button class="menu-btn" data-target="musicSubmenu">
+      <span class="icon">🎵</span> Музыка
+      <span class="arrow">›</span>
+    </button>
+    <div class="submenu" id="musicSubmenu">
+      <div class="music-player">
+        <div class="track-name" id="currentTrack">🎵 CAROL</div>
+        <div class="music-controls">
+          <button onclick="prevTrack()" title="Предыдущий">⏮</button>
+          <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+          <button onclick="nextTrack()" title="Следующий">⏭</button>
+        </div>
+        <div class="volume-control">
+          <span class="vol-icon">🔊</span>
+          <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.7" oninput="updateVolume(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <button class="menu-btn" onclick="toggleTerminalMode()" style="margin-top:8px; border-top:1px solid var(--border); padding-top:14px;">
+      <span class="icon">💻</span> Терминал-режим
+      <span class="arrow" id="termToggleArrow">◻</span>
+    </button>
+  </nav>
+
+  <main class="page-transition" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center;">
+    <a class="logo-link" id="logoLink" aria-label="Home" title="Кликни 5 раз для сюрприза">
+      <span class="logo">Lyez</span>
+    </a>
+    <div class="typing-text" id="typingText"></div>
+  </main>
+
+  <footer>© 2026 Lyez</footer>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <div id="modalContent" style="white-space:pre-line; margin-bottom: 16px;"></div>
+      <button class="btn btn-primary" onclick="closeAllModals()">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="configModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>🛠️ Мой конфиг</h2>
+      <p>Скачай архив с моими настройками CS2.</p>
+      <button class="btn btn-primary" onclick="downloadConfig()">⬇️ Скачать .zip</button>
+      <button class="btn" onclick="closeAllModals()" style="margin-top:10px;">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- DONATE MODAL with QR code -->
+  <div class="modal-overlay" id="donateModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>💳 T‑Bank</h2>
+      <div class="donate-qr" onclick="copyDonateNumber()">
+        <img src="https://cdn.discordapp.com/attachments/1506361868837458111/1533498187145416707/IMG_4850.png?ex=6a70b4fa&is=6a6f637a&hm=5d7cd528d95f746d81fdbfc99b7daa74da6c9083b8683372380a11ea7c330bb2&" alt="QR-код для доната" />
+        <span class="copy-feedback" id="donateFeedback">Скопировано!</span>
+      </div>
+      <button class="btn" onclick="closeAllModals()">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="lisSkinsModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>🦊 Lis-Skins</h2>
+      <p>Маркетплейс скинов для CS2 с быстрой доставкой.</p>
+      <div class="btn-group">
+        <a href="https://lis-skins.com/?rf=3615133" target="_blank" class="btn btn-primary">Перейти</a>
+        <button class="btn" onclick="closeAllModals()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="aimMarketModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>🎯 Aim-Market</h2>
+      <p>Надёжный маркет с конкурентными ценами.</p>
+      <div class="btn-group">
+        <a href="https://aim.market/p/f08c0081-3ce6-4d20-bfb7-4df08f303828" target="_blank" class="btn btn-primary">Перейти</a>
+        <button class="btn" onclick="closeAllModals()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="betModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>💰 Калькулятор ставок</h2>
+      <p>Рассчитай потенциальный выигрыш.</p>
+      <div class="bet-calc">
+        <div class="field">
+          <label>💰 Сумма ставки ($)</label>
+          <input type="number" id="betAmount" value="10" min="0.01" step="0.5" oninput="calculateBet()">
+        </div>
+        <div class="field">
+          <label>📈 Коэффициент (x)</label>
+          <input type="number" id="betOdds" value="2.5" min="1.01" step="0.1" oninput="calculateBet()">
+        </div>
+        <div class="bet-result">
+          💵 Потенциальный выигрыш: <span id="betResult">$25.00</span>
+        </div>
+        <div style="font-size:0.8rem; color:var(--text-muted); text-align:center;">
+          Чистая прибыль: <span id="betProfit">$15.00</span>
+        </div>
+      </div>
+      <button class="btn" onclick="closeAllModals()">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- TRAINING MAPS MODAL -->
+  <div class="modal-overlay" id="trainingMapsModalOverlay">
+    <div class="modal">
+      <button class="close-modal" onclick="closeAllModals()">✕</button>
+      <h2>🗺️ Тренировочные карты</h2>
+      <p>Выбери карту для тренировки:</p>
+      <ul class="training-list">
+        <!-- ⬇️ СЮДА ВСТАВЛЯЙ СВОИ ССЫЛКИ ⬇️ -->
+        <li><a href="#" target="_blank" class="btn" style="width:100%; text-align:center;">Карта 1</a></li>
+        <li><a href="#" target="_blank" class="btn" style="width:100%; text-align:center;">Карта 2</a></li>
+        <li><a href="#" target="_blank" class="btn" style="width:100%; text-align:center;">Карта 3</a></li>
+        <!-- ⬆️ КОНЕЦ ВСТАВКИ ССЫЛОК ⬆️ -->
+      </ul>
+      <button class="btn" onclick="closeAllModals()">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <audio id="audioPlayer" preload="metadata">
+    <source src="https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // ===== MUSIC PLAYER =====
+    const audio = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const trackName = document.getElementById('currentTrack');
+    const volumeSlider = document.getElementById('volumeSlider');
+
+    const playlist = [
+      { name: '🎵 CAROL', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409812790902814/whitek3d_-_CAROL_hitmos.fm.mp3?ex=6a7062ac&is=6a6f112c&hm=a19c965ca7b3fc14128e65e9e852f894196a559098e39e46f70d0244ec4e1111&' },
+      { name: '🎵 Glance', url: 'https://cdn.discordapp.com/attachments/1506361868837458111/1533409813227241532/idonower_-_Glance_79472782.mp3?ex=6a7062ac&is=6a6f112c&hm=c58cd3ad42bdffcf5f73a0373a5960c8fad5658a682c69a1002e531695149b47&' }
+    ];
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+
+    function loadMusicState() {
+      try {
+        const saved = localStorage.getItem('lyezMusicState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          volumeSlider.value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) {
+            audio.play().catch(() => { isPlaying = false; updateUI(); });
+          }
+        } else {
+          loadTrack(0);
+        }
+      } catch {
+        loadTrack(0);
+      }
+      updateUI();
+    }
+
+    function saveMusicState() {
+      try {
+        localStorage.setItem('lyezMusicState', JSON.stringify({
+          trackIndex: currentTrackIndex,
+          isPlaying: isPlaying,
+          volume: audio.volume
+        }));
+      } catch {}
+    }
+
+    function loadTrack(index) {
+      const track = playlist[index];
+      if (!track) return;
+      audio.src = track.url;
+      trackName.textContent = track.name;
+      audio.load();
+      saveMusicState();
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play().catch(() => { showToast('Не удалось воспроизвести', 'error'); });
+        isPlaying = true;
+      } else {
+        audio.pause();
+        isPlaying = false;
+      }
+      updateUI();
+      saveMusicState();
+    }
+
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateUI();
+      saveMusicState();
+    }
+
+    function prevTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) { audio.play().catch(() => {}); }
+      updateUI();
+      saveMusicState();
+    }
+
+    function updateVolume(value) {
+      audio.volume = parseFloat(value);
+      saveMusicState();
+    }
+
+    function updateUI() {
+      playBtn.textContent = isPlaying ? '⏸' : '▶';
+    }
+
+    audio.addEventListener('play', () => { isPlaying = true; updateUI(); saveMusicState(); });
+    audio.addEventListener('pause', () => { isPlaying = false; updateUI(); saveMusicState(); });
+    audio.addEventListener('ended', () => { nextTrack(); });
+
+    // ===== TERMINAL MODE =====
+    let terminalMode = false;
+
+    function loadTerminalMode() {
+      try {
+        const saved = localStorage.getItem('lyezTerminalMode');
+        if (saved === 'true') {
+          terminalMode = true;
+          document.body.classList.add('terminal-mode');
+          document.getElementById('termToggleArrow').textContent = '◼';
+        }
+      } catch {}
+    }
+
+    function saveTerminalMode() {
+      try {
+        localStorage.setItem('lyezTerminalMode', terminalMode ? 'true' : 'false');
+      } catch {}
+    }
+
+    function toggleTerminalMode() {
+      terminalMode = !terminalMode;
+      document.body.classList.toggle('terminal-mode', terminalMode);
+      document.getElementById('termToggleArrow').textContent = terminalMode ? '◼' : '◻';
+      saveTerminalMode();
+      showToast(terminalMode ? '💻 Терминал-режим включён' : '💻 Обычный режим', 'info');
+      closeMenu();
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'lyezTerminalMode') {
+        if (e.newValue === 'true') {
+          terminalMode = true;
+          document.body.classList.add('terminal-mode');
+          document.getElementById('termToggleArrow').textContent = '◼';
+        } else {
+          terminalMode = false;
+          document.body.classList.remove('terminal-mode');
+          document.getElementById('termToggleArrow').textContent = '◻';
+        }
+      }
+      if (e.key === 'lyezMusicState') {
+        try {
+          const state = JSON.parse(e.newValue);
+          currentTrackIndex = state.trackIndex || 0;
+          isPlaying = state.isPlaying || false;
+          audio.volume = state.volume || 0.7;
+          volumeSlider.value = audio.volume;
+          loadTrack(currentTrackIndex);
+          if (isPlaying) { audio.play().catch(() => {}); }
+          updateUI();
+        } catch {}
+      }
+    });
+
+    // ===== TYPING EFFECT =====
+    const phrases = ['gaming hub', 'cs2 player', 'aim & chill', 'lyez community', '&nbsp;'];
+    let phraseIndex = 0, charIndex = 0, isDeleting = false;
+    const typingElement = document.getElementById('typingText');
+
+    function typeEffect() {
+      const currentPhrase = phrases[phraseIndex];
+      if (isDeleting) {
+        typingElement.innerHTML = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+      } else {
+        typingElement.innerHTML = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+      }
+      let speed = isDeleting ? 50 : 100;
+      if (!isDeleting && charIndex === currentPhrase.length) {
+        speed = 1500;
+        isDeleting = true;
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        speed = 500;
+      }
+      setTimeout(typeEffect, speed);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { setTimeout(typeEffect, 800); });
+
+    // ===== EASTER EGG =====
+    let logoClickCount = 0;
+    document.getElementById('logoLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      logoClickCount++;
+      if (logoClickCount >= 5) {
+        logoClickCount = 0;
+        window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      } else {
+        showToast(`👀 Ещё ${5 - logoClickCount} кликов...`, 'info');
+      }
+    });
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 400);
+      }, duration);
+    }
+
+    // ===== MENU =====
+    const burger = document.getElementById('burgerBtn');
+    const menu = document.getElementById('menu');
+    const overlay = document.getElementById('menuOverlay');
+
+    function toggleMenu() {
+      const isOpen = menu.classList.contains('active');
+      burger.classList.toggle('active');
+      menu.classList.toggle('active');
+      overlay.classList.toggle('active');
+      if (!isOpen) closeAllSubmenus();
+    }
+
+    function closeMenu() {
+      burger.classList.remove('active');
+      menu.classList.remove('active');
+      overlay.classList.remove('active');
+      closeAllSubmenus();
+    }
+
+    burger.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(); });
+    overlay.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeMenu(); closeAllModals(); } });
+
+    // ===== SUBMENUS =====
+    const menuBtns = document.querySelectorAll('.menu-btn');
+    menuBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const targetId = this.dataset.target;
+        if (!targetId) return;
+        const submenu = document.getElementById(targetId);
+        if (!submenu) return;
+        e.stopPropagation();
+        const isOpen = submenu.classList.contains('open');
+        closeAllSubmenus();
+        if (!isOpen) {
+          submenu.classList.add('open');
+          this.classList.add('active');
+        } else {
+          this.classList.remove('active');
+        }
+      });
+    });
+
+    function closeAllSubmenus() {
+      document.querySelectorAll('.submenu').forEach(s => s.classList.remove('open'));
+      document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    // ===== MODALS =====
+    function openModal(overlayId) {
+      const overlay = document.getElementById(overlayId);
+      if (overlay) {
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        closeMenu();
+      }
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay').forEach(o => o.classList.remove('active'));
+      document.body.style.overflow = '';
+    }
+
+    function showModal(content) {
+      document.getElementById('modalContent').textContent = content;
+      openModal('modalOverlay');
+    }
+
+    function showAboutModal() {
+      showModal('📖 О Lyez\n\nLyez — это личный игровой хаб для демонстрации моего пути в CS2, статистики, моментов и настроек.\n\nСделано с душой для геймеров, ценящих минимализм и стиль.');
+    }
+
+    function showPCSpecs() {
+      showModal('🖥️ Мой ПК:\n• CPU: AMD Ryzen 5 9600X\n• Материнка: GIGABYTE B650M AORUS ELITE\n• Корпус: PHANTEKS XT M3\n• GPU: Palit RTX 5070 Ti\n• Кулер: Thermalright Peerless Assassin 120 SE\n• RAM: Acer Predator Pallas II 32Gb CL30\n• SSD: ADATA LEGEND 960\n• БП: 1STPLAYER NGDP 850W');
+    }
+
+    function showConfig() { openModal('configModalOverlay'); }
+
+    function downloadConfig() {
+      const link = document.createElement('a');
+      link.href = 'https://lyez-eng.github.io/LYEZ/files/cfg.zip';
+      link.download = 'cfg.zip';
+      link.click();
+      showToast('Скачивание конфига начато', 'success');
+      closeAllModals();
+    }
+
+    function showDonateModal() { openModal('donateModalOverlay'); }
+
+    function copyDonateNumber() {
+      const feedback = document.getElementById('donateFeedback');
+      // Можно скопировать что угодно, но для QR‑кода это не обязательно
+      // Оставляем просто визуальный фидбек
+      feedback.classList.add('show');
+      showToast('QR‑код скопирован!', 'success');
+      setTimeout(() => feedback.classList.remove('show'), 2000);
+    }
+
+    function showLisSkinsModal() { openModal('lisSkinsModalOverlay'); }
+    function showAimMarketModal() { openModal('aimMarketModalOverlay'); }
+
+    function showBetCalculator() {
+      openModal('betModalOverlay');
+      calculateBet();
+    }
+
+    function calculateBet() {
+      const amount = parseFloat(document.getElementById('betAmount').value) || 0;
+      const odds = parseFloat(document.getElementById('betOdds').value) || 1;
+      const result = amount * odds;
+      const profit = amount * (odds - 1);
+      document.getElementById('betResult').textContent = `$${result.toFixed(2)}`;
+      document.getElementById('betProfit').textContent = `$${profit.toFixed(2)}`;
+    }
+
+    // ===== TRAINING MAPS =====
+    function showTrainingMapsModal() {
+      openModal('trainingMapsModalOverlay');
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) closeAllModals();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTerminalMode();
+      loadMusicState();
+      console.log('🎮 Lyez portal loaded with mobile sync!');
+    });
+  </script>
+</body>
+</html>
